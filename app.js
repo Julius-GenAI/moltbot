@@ -1,13 +1,12 @@
 const express = require("express");
 const axios = require("axios");
 
-const app = express(); // 👈 primero crear app
-
+const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// UI básica
+// UI simple
 app.get("/", (req, res) => {
   res.send(`
     <html>
@@ -37,41 +36,51 @@ app.get("/", (req, res) => {
   `);
 });
 
-// endpoint del bot
+// 🔥 ENDPOINT CON GROQ (MODELO FREE ACTUAL)
 app.post("/chat", async (req, res) => {
   const { message } = req.body;
 
   try {
-const response = await axios.post(
-  "https://api.groq.com/openai/v1/chat/completions",
-  {
-    model: "llama-3.1-8b-instant",
-    messages: [
-      { role: "system", content: "Sos un asistente útil." },
-      { role: "user", content: message }
-    ]
-  },
-  {
-    headers: {
-      "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-      "Content-Type": "application/json"
-    }
-  }
-);
+    const response = await axios.post(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        model: "llama-3.1-8b-instant", // ✅ modelo FREE activo
+        messages: [
+          {
+            role: "system",
+            content: "Sos un asistente útil, claro y conciso."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
     );
 
-    res.json({
-      reply: response.data.choices[0].message.content
-    });
+    // respuesta limpia
+    const reply = response.data.choices[0].message.content;
+
+    res.json({ reply });
 
   } catch (error) {
-    console.error(error.response?.data || error.message);
+    console.error("Groq error:", error.response?.data || error.message);
+
     res.status(500).json({
       error: error.response?.data || error.message
     });
   }
 });
-// levantar server
+
+// levantar servidor
 app.listen(PORT, () => {
-  console.log(`Running on ${PORT}`);
+  console.log(`Moltbot corriendo en puerto ${PORT}`);
 });
