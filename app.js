@@ -43,24 +43,33 @@ app.post("/chat", async (req, res) => {
 
   try {
     const response = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
+      "https://api.groq.com/openai/v1/chat/completions",
       {
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: message }]
+        model: "llama3-8b-8192", // rápido y gratis
+        messages: [
+          { role: "system", content: "Sos un asistente útil." },
+          { role: "user", content: message }
+        ]
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json"
         }
       }
     );
 
-    res.json(response.data);
+    res.json({
+      reply: response.data.choices[0].message.content
+    });
+
   } catch (error) {
-    res.status(500).json({ error: "Error en el bot" });
+    console.error(error.response?.data || error.message);
+    res.status(500).json({
+      error: error.response?.data || error.message
+    });
   }
 });
-
 // levantar server
 app.listen(PORT, () => {
   console.log(`Running on ${PORT}`);
