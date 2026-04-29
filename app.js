@@ -42,21 +42,22 @@ app.post("/chat", async (req, res) => {
   const { message } = req.body;
 
   try {
-    const response = await axios.post(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        model: "llama3-8b-8192", // rápido y gratis
-        messages: [
-          { role: "system", content: "Sos un asistente útil." },
-          { role: "user", content: message }
-        ]
-      },
-      {
-        headers: {
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
+const response = await axios.post(
+  "https://api.groq.com/openai/v1/chat/completions",
+  {
+    model: "llama-3.1-8b-instant",
+    messages: [
+      { role: "system", content: "Sos un asistente útil." },
+      { role: "user", content: message }
+    ]
+  },
+  {
+    headers: {
+      "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+      "Content-Type": "application/json"
+    }
+  }
+);
     );
 
     res.json({
